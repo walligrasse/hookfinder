@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hook-Finder – @die.walli</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+body{display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 40px}
+#app{width:100%;max-width:480px}
+.hdr{padding:20px 20px 16px;border-bottom:1px solid #2a2a2a;background:#111;border-radius:14px 14px 0 0}
+.brand{font-size:10px;font-weight:700;letter-spacing:.18em;color:#FF2D78;margin-bottom:6px}
+.hdr-title{font-size:18px;font-weight:500;color:#fff;line-height:1.3}
+.prog-wrap{height:3px;background:#222;border-radius:3px;margin-top:14px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#FF2D78,#00E5FF);border-radius:3px;transition:width .35s ease}
+.step-lbl{font-size:11px;color:#555;margin-top:6px}
+.body{padding:22px 20px 28px;background:#111;border-radius:0 0 14px 14px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.qblock{animation:fadeUp .25s ease}
+.qlabel{font-size:12px;font-weight:700;color:#00E5FF;letter-spacing:.07em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;color:#f0f0f0;line-height:1.45;margin-bottom:18px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:#1a1a1a;border:1.5px solid #383838;border-radius:12px;padding:14px 16px;color:#e0e0e0;font-size:15px;font-family:inherit;text-align:left;cursor:pointer;transition:all .15s ease;line-height:1.4;display:flex;align-items:center;gap:12px;width:100%}
+.opt:hover{border-color:#FF2D78;background:#1f1117;color:#fff}
+.opt.sel{border-color:#00E5FF;background:#0d1f22;color:#00E5FF;font-weight:500}
+.dot{width:20px;height:20px;min-width:20px;border-radius:50%;border:1.5px solid #444;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.opt.sel .dot{border-color:#00E5FF;background:#00E5FF}
+.opt.sel .dot::after{content:'';width:8px;height:8px;background:#000;border-radius:50%;display:block}
+.opt:hover .dot{border-color:#FF2D78}
+.field{width:100%;background:#1a1a1a;border:1.5px solid #383838;border-radius:12px;padding:13px 15px;color:#e0e0e0;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s;resize:vertical}
+.field:focus{border-color:#00E5FF}
+.field::placeholder{color:#555}
+textarea.field{min-height:100px}
+input.field{display:block;height:50px;resize:none}
+.navrow{display:flex;gap:10px;margin-top:22px}
+.btn-back{background:transparent;border:1.5px solid #2a2a2a;border-radius:10px;padding:13px 18px;color:#888;font-size:14px;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-back:hover{border-color:#555;color:#ccc}
+.btn-next{flex:1;background:#FF2D78;border:none;border-radius:10px;padding:14px 18px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity .15s;min-height:50px}
+.btn-next:hover{opacity:.88}
+.btn-next:disabled{opacity:.25;cursor:not-allowed;background:#333;color:#666}
+.sending{text-align:center;padding:80px 20px;background:#111;border-radius:0 0 14px 14px}
+.spin{width:36px;height:36px;border:2px solid #222;border-top-color:#FF2D78;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sending p{color:#555;font-size:14px}
+.res-hdr{padding:20px 20px 16px;border-bottom:1px solid #2a2a2a;background:#111;border-radius:14px 14px 0 0}
+.res-hdr h2{font-size:17px;font-weight:500;color:#fff}
+.res-hdr p{font-size:13px;color:#555;margin-top:4px}
+.res-body{padding:18px 20px 32px;background:#111;border-radius:0 0 14px 14px}
+.cat-label{font-size:10px;font-weight:700;letter-spacing:.12em;padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:11px}
+.cp{background:rgba(255,45,120,.15);color:#FF2D78}
+.cc{background:rgba(0,229,255,.12);color:#00E5FF}
+.cg{background:#1e1e1e;color:#777}
+.hook{background:#161616;border:1.5px solid #242424;border-radius:11px;padding:13px 14px;margin-bottom:8px;font-size:14px;color:#ccc;line-height:1.6;cursor:pointer;transition:border-color .15s;position:relative}
+.hook:hover{border-color:#383838;color:#eee}
+.hook.copied{border-color:#00E5FF}
+.hcopy{font-size:11px;color:#3a3a3a;margin-top:7px}
+.hook:hover .hcopy{color:#555}
+.hook.copied .hcopy{color:#00E5FF}
+.cta-box{background:rgba(255,45,120,.07);border:1.5px solid rgba(255,45,120,.18);border-radius:12px;padding:16px;margin-top:12px}
+.cta-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:#FF2D78;margin-bottom:6px}
+.cta-txt{font-size:13px;color:#888;line-height:1.55}
+.sep{height:1px;background:#1c1c1c;margin:16px 0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sqz">
+    <div class="hdr">
+      <div class="brand">@DIE.WALLI</div>
+      <div class="hdr-title">Deine persönlichen Hook-Vorlagen</div>
+      <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+      <div class="step-lbl" id="slbl">Frage 1 von 6</div>
+    </div>
+    <div class="body" id="qbody"></div>
+  </div>
+  <div id="ssend" style="display:none">
+    <div class="sending"><div class="spin"></div><p>Einen Moment…</p></div>
+  </div>
+  <div id="sres" style="display:none">
+    <div class="res-hdr">
+      <div class="brand">@DIE.WALLI</div>
+      <h2>Deine Hook-Vorlagen sind ready.</h2>
+      <p id="rsub"></p>
+    </div>
+    <div class="res-body" id="rbody"></div>
+  </div>
+</div>
+
+<script>
+const H={
+"Authority":["Mein/e (Ausgangszustand) hat früher so ausgesehen – und jetzt so.","10 JAHRE hat es gedauert – von (Ausgangszustand) zu (Zielzustand).","So machst du aus dem einen das andere – in X einfachen Schritten.","In den letzten (Zeitraum) hab ich mein/e (Sache) von (Vorher) auf (Nachher) gesteigert.","Nur # (Sache) hat meinen Kunden von (Vorher) zu (Zielzustand) gebracht.","Mein/e Kunde/in hat (Traumziel) erreicht – ohne (Schmerzpunkt).","Wenn ich heute nochmal (Bereich) aufbauen würde – so würde ich es machen.","Das Geheimnis hinter (Ergebnis)? Es ist nicht was du denkst.","In (Zeitraum) hab ich (Ergebnis) erzielt. Kein Geheimnis – hier sind die Schritte.","Meine Methode hat (X) Menschen geholfen. Heute zeig ich dir warum.","Ich bin (Bezeichnung) – und das hier hat mich dorthin gebracht.","Das Einzige, was ich heute anders machen würde: (Erkenntnis)."],
+"Day_in_the_Life":["Wir alle haben die gleichen 24 Stunden – so bringe ich meine zum Einsatz.","Tag 1 davon, mein ganzes Leben neu anzufangen.","Als (Zielgruppe) sind meine Tage ziemlich unterschiedlich.","Ein Tag im Leben einer/eines (Eigenschaft) Person.","Komm mit mir zur Arbeit als (Bezeichnung).","Tag # meines Neuanfangs als (Bezeichnung).","Komm mit mir, um täglich (Betrag) zu verdienen – mit (Methode).","Das ist, wie ein normaler Tag als (Bezeichnung) eine Woche vor (Ereignis) aussieht."],
+"Educational":["Das zeigt dein (X) davor, währenddessen und danach.","Genau so viel (Aktion) brauchst du, um (Ergebnis) zu erreichen.","So sieht (Sache) aus, wenn du (Aktion) machst – und so, wenn nicht.","Ich zeige dir, wie du (Ergebnis) erreichst – mit (verblüffender Methode).","Es hat mich 10 Jahre gekostet, das zu lernen – dir erkläre ich es in unter einer Minute.","Alle sagen dir (Aktion) – aber niemand zeigt dir wirklich wie. Hier ist ein #-Sekunden-Tutorial.","Wenn du (Zielgruppe) bist und (Traumziel) willst – hör dir das an.","Ich glaube, ich hab gerade den größten (Nische)-Cheat-Code entdeckt.","(Aktion) für (Zeitraum) und du wirst (Traumziel) erreichen.","In 60 Sekunden zeige ich dir mehr über (Sache) als du in deinem ganzen Leben gelernt hast.","Du wirst (Traumziel) nie erreichen, wenn du nicht diese 3 Dinge tust.","Wenn ich noch einmal in meinen (Altersgruppe) anfangen würde – das wären die # Dinge."],
+"Myth_Busting":["(Sache) (Fakt) – (komplettes Gegenteil) (ähnlicher Fakt).","So erreichst du (Traumziel) – und machst dabei (Guilty Pleasure).","Mehr (Zielgruppe) müssen das hören: (verbreitete Meinung) wird nicht (Ergebnis) bringen.","Sie sagten: (berühmtes Zitat). Das ist eine Lüge.","Hör auf, (Sache) für (Ergebnis) zu verwenden.","Es gibt absolut keinen Grund, jeden Tag (Schmerzpunkt) zu erleben, nur weil du (Traumziel) anstrebst.","Du bist nicht schlecht in (Aktion) – du wurdest einfach nie gelehrt, wie man es macht.","Wenn du (Sache) so machst, machst du es falsch.","Ich sag's noch mal: (verblüffende Tatsache)."],
+"Comparison":["Das ist ein/e (Sache) – und das ist ein/e (Sache).","Was ist besser – (Option 1) oder (Option 2) für (Traumziel)? Ich hab es mit einer erreicht – kein Vergleich.","Für diese (Sache) könntest du all das hier haben.","Billig vs. Teuer (Sache).","Beide (Sache) sind genau gleich. Aber diese ist (Metrik) und diese (Metrik)."],
+"Storytelling":["Ich hab mein/e (Business) mit (Alter) Jahren und (Betrag) gestartet.","Vor X Jahren hat mir (Person) gesagt: (Zitat).","Ich hab keinen Plan B – das hier muss also klappen.","So hat (Ereignis/Ergebnis) mein Leben verändert.","In (Zeitraum) bin ich von (Vorher) zu (Nachher) gegangen.","Das ist die Geschichte, wie ich (Errungenschaft) erreicht habe.","Ich bin (Alter) und habe eine Identitätskrise.","Als ich (Aktion) gemacht hab, haben die Leute gesagt: (Feedback).","Das Geheimnis ist raus – ich mache (Aktion).","Ich habe (Traumziel) ohne (Schmerzpunkte) erreicht – so geht's.","Also hab ich Mist gebaut."],
+"Random":["Das sind (große Zahl) von (Sache).","Du verlierst deine/n Freund/in diese Woche an (Ereignis/Hobby).","Was (Titel) sagt – und was er/sie wirklich meint.","(Trend) ist der widerlichste Trend auf Social Media.","Ich glaub nicht an (verbreitete Meinung) – ich glaub an (eigene Überzeugung)."]
+};
+
+const QS=[
+  {id:'duration',text:'Wie lange postest du schon auf Instagram?',type:'choice',opts:['Unter 3 Monate','3–12 Monate','Über 1 Jahr']},
+  {id:'problem',text:'Was ist dein größtes Problem gerade?',type:'choice',opts:['Zu wenig Reichweite','Keine echte Connection zur Community','Ich weiß nicht wie ich über Content verkaufe']},
+  {id:'format',text:'Welches Format nutzt du hauptsächlich?',type:'choice',opts:['Reels','Carousels','Beides']},
+  {id:'niche',text:'Was ist deine Nische oder dein Thema?',type:'text',ph:'z.B. Fitness, Online Business, Kochen…'},
+  {id:'goal',text:'Was soll dein nächster Post bewirken?',type:'choice',opts:['Neue Leute erreichen','Bestehende Follower aktivieren','Vertrauen aufbauen']},
+  {id:'konkret',text:'Was ist dein konkretes Problem mit deinem Content?',type:'textarea',ph:'Beschreib kurz womit du wirklich kämpfst…'}
+];
+
+let ans={},cur=0;
+
+function render(){
+  const q=QS[cur];
+  document.getElementById('prog').style.width=Math.round((cur/QS.length)*100)+'%';
+  document.getElementById('slbl').textContent='Frage '+(cur+1)+' von '+QS.length;
+  let h='<div class="qblock"><div class="qlabel">Frage '+(cur+1)+' von '+QS.length+'</div><div class="qtext">'+q.text+'</div>';
+  if(q.type==='choice'){
+    h+='<div class="opts">';
+    q.opts.forEach(function(o){
+      var s=ans[q.id]===o?'sel':'';
+      h+='<button class="opt '+s+'" data-v="'+o.replace(/"/g,'&quot;')+'" onclick="pick(\''+q.id+'\',this.dataset.v)"><span class="dot"></span><span>'+o+'</span></button>';
+    });
+    h+='</div>';
+  } else if(q.type==='textarea'){
+    h+='<textarea class="field" id="fi" placeholder="'+q.ph+'" oninput="onInp(this.value)">'+( ans[q.id]||'')+'</textarea>';
+  } else {
+    h+='<input type="text" class="field" id="fi" placeholder="'+q.ph+'" value="'+(ans[q.id]||'')+'" oninput="onInp(this.value)">';
+  }
+  var isLast=cur===QS.length-1;
+  var dis=q.type==='choice'&&!ans[q.id]?' disabled':'';
+  h+='<div class="navrow">'+(cur>0?'<button class="btn-back" onclick="back()">← Zurück</button>':'')+'<button class="btn-next" id="nb" onclick="'+(isLast?'submit()':'next()')+'"'+dis+'>'+(isLast?'Meine Hooks anzeigen ✦':'Weiter →')+'</button></div></div>';
+  document.getElementById('qbody').innerHTML=h;
+  if(q.type!=='choice'){var fi=document.getElementById('fi');if(fi)onInp(fi.value);}
+}
+
+function onInp(v){
+  ans[QS[cur].id]=v;
+  var nb=document.getElementById('nb');
+  if(nb)nb.disabled=v.trim().length<1;
+}
+
+function pick(id,v){
+  ans[id]=v;render();
+  setTimeout(function(){next();},200);
+}
+
+function next(){
+  var q=QS[cur];
+  if(q.type!=='choice'){var fi=document.getElementById('fi');if(fi)ans[q.id]=fi.value;if((ans[q.id]||'').trim().length<1)return;}
+  else{if(!ans[q.id])return;}
+  cur++;render();
+}
+
+function back(){cur--;render();}
+
+function submit(){
+  var fi=document.getElementById('fi');if(fi)ans[QS[cur].id]=fi.value;
+  document.getElementById('sqz').style.display='none';
+  document.getElementById('ssend').style.display='block';
+  var fd=new FormData();
+  fd.append('Wie_lange',ans.duration||'');
+  fd.append('Problem',ans.problem||'');
+  fd.append('Format',ans.format||'');
+  fd.append('Nische',ans.niche||'');
+  fd.append('Ziel',ans.goal||'');
+  fd.append('Konkretes_Problem',ans.konkret||'');
+  fetch('https://formspree.io/f/mvzyyqoj',{method:'POST',body:fd,headers:{Accept:'application/json'}}).catch(function(){}).finally(function(){setTimeout(showRes,800);});
+}
+
+var CL={Authority:'cp',Day_in_the_Life:'cc',Educational:'cc',Myth_Busting:'cp',Comparison:'cg',Storytelling:'cp',Random:'cg'};
+var CN={Authority:'Authority',Day_in_the_Life:'Day in the Life',Educational:'Educational',Myth_Busting:'Myth Busting',Comparison:'Comparison',Storytelling:'Storytelling',Random:'Random'};
+
+function getHooks(){
+  var cats=[];
+  var p=ans.problem||'',g=ans.goal||'',d=ans.duration||'';
+  if(p.indexOf('Reichweite')>-1||g.indexOf('Neue')>-1)cats.push('Educational','Myth_Busting');
+  if(p.indexOf('Connection')>-1||g.indexOf('aktivieren')>-1)cats.push('Storytelling','Day_in_the_Life');
+  if(p.indexOf('verkaufe')>-1||g.indexOf('Vertrauen')>-1)cats.push('Authority','Comparison');
+  if(d.indexOf('Unter')>-1)cats.push('Educational','Random');
+  if(!cats.length)cats=['Educational','Storytelling','Authority'];
+  var seen={},uniq=[];
+  cats.forEach(function(c){if(!seen[c]){seen[c]=1;uniq.push(c);}});
+  cats=uniq.slice(0,3);
+  var r={};
+  cats.forEach(function(c){
+    var all=H[c].slice().sort(function(){return Math.random()-.5;});
+    r[c]=all.slice(0,5);
+  });
+  return r;
+}
+
+function showRes(){
+  document.getElementById('ssend').style.display='none';
+  document.getElementById('sres').style.display='block';
+  var p=ans.problem||'';
+  document.getElementById('rsub').textContent=
+    p.indexOf('Reichweite')>-1?'Fokus: Reichweite & neue Leute erreichen':
+    p.indexOf('Connection')>-1?'Fokus: Community & parasoziale Verbindung':
+    p.indexOf('verkaufe')>-1?'Fokus: Vertrauen aufbauen & verkaufen':
+    'Dein personalisiertes Hook-Paket';
+  var hooks=getHooks();
+  var h='';
+  Object.keys(hooks).forEach(function(cat){
+    var list=hooks[cat];
+    h+='<span class="cat-label '+CL[cat]+'">'+CN[cat]+'</span>';
+    list.forEach(function(hk){
+      var safe=hk.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var forCopy=hk.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      h+='<div class="hook" onclick="cp(this,\''+forCopy+'\')">'+safe+'<div class="hcopy">Tippen zum Kopieren</div></div>';
+    });
+    h+='<div class="sep"></div>';
+  });
+  h+='<div class="cta-box"><div class="cta-lbl">@DIE.WALLI</div><div class="cta-txt">Du willst wissen, WARUM ein Hook funktioniert – nicht nur welcher? Folg mir auf Instagram für wöchentliche Breakdowns.</div></div>';
+  document.getElementById('rbody').innerHTML=h;
+}
+
+function cp(el,txt){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(function(){flash(el);});
+  } else {
+    var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);flash(el);
+  }
+}
+
+function flash(el){
+  el.classList.add('copied');
+  el.querySelector('.hcopy').textContent='✓ Kopiert!';
+  setTimeout(function(){el.classList.remove('copied');el.querySelector('.hcopy').textContent='Tippen zum Kopieren';},1500);
+}
+
+render();
+</script>
+</body>
+</html>
